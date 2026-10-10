@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>报名成功 - AI应用教学开放日</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="card success-page">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <h2 class="success-title">报名成功</h2>
+
+      <div class="info-list">
+        <div class="info-item">
+          <span class="info-label">姓名</span>
+          <span class="info-value" id="infoName" style="font-size:18px;color:var(--primary);">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">参加场次</span>
+          <span class="info-value" id="infoSession" style="font-size:16px;color:var(--success);">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">身份</span>
+          <span class="info-value" id="infoIdentity">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">院系</span>
+          <span class="info-value" id="infoDept">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">报名时间</span>
+          <span class="info-value" id="infoTime">-</span>
+        </div>
+      </div>
+
+      <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">
+        请按时参加活动，如有疑问请联系活动组织方。
+      </p>
+
+      <div class="action-group">
+        <button class="btn btn-secondary" onclick="location.href='index.html'">返回报名页</button>
+        <button class="btn btn-primary" onclick="window.close()">关闭页面</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>
+    const data = sessionStorage.getItem("latestRegistration");
+    if (data) {
+      const record = JSON.parse(data);
+      document.getElementById("infoName").textContent = record.name;
+      document.getElementById("infoSession").textContent = record.session;
+      document.getElementById("infoIdentity").textContent = record.identity || "-";
+      document.getElementById("infoDept").textContent = record.department || "-";
+      document.getElementById("infoTime").textContent = formatDateTime(record.registerTime);
+    } else {
+      showToast("未找到报名信息，请重新报名", "error");
+      setTimeout(() => (location.href = "index.html"), 1500);
+    }
+  </script>
+</body>
+</html>

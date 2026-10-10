@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI应用教学开放日 · 在线报名</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>AI应用教学开放日 · 在线报名</h1>
+      <div class="event-info">
+        <span>📅 活动时间：2026-12-20</span>
+        <span id="deadlineText">⏰ 报名截止：2026-12-31 23:59</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <form id="regForm" novalidate>
+        <!-- 身份选择 -->
+        <div class="form-group">
+          <label>身份</label>
+          <div class="radio-group">
+            <label class="radio-item">
+              <input type="radio" name="identity" value="教师" /> 教师
+            </label>
+            <label class="radio-item">
+              <input type="radio" name="identity" value="学生" /> 学生
+            </label>
+          </div>
+        </div>
+
+        <!-- 姓名 -->
+        <div class="form-group">
+          <label for="name">姓名<span class="required">*</span></label>
+          <input type="text" id="name" class="form-control" placeholder="请输入姓名" />
+          <div class="error-text" id="nameErr">请填写姓名</div>
+        </div>
+
+        <!-- 院系 -->
+        <div class="form-group">
+          <label for="department">院系</label>
+          <input type="text" id="department" class="form-control" placeholder="请输入所在院系" />
+        </div>
+
+        <!-- 手机号 -->
+        <div class="form-group">
+          <label for="phone">手机号<span class="required">*</span></label>
+          <input type="text" id="phone" class="form-control" placeholder="请输入11位手机号" maxlength="11" />
+          <div class="error-text" id="phoneErr">请输入正确的手机号</div>
+        </div>
+
+        <!-- 参加场次 -->
+        <div class="form-group">
+          <label for="session">参加场次<span class="required">*</span></label>
+          <select id="session" class="form-control">
+            <option value="">请选择参加场次</option>
+            <option value="第一场 09:00-11:00">第一场 09:00-11:00</option>
+            <option value="第二场 14:00-16:00">第二场 14:00-16:00</option>
+            <option value="第三场 19:00-21:00">第三场 19:00-21:00</option>
+          </select>
+          <div class="error-text" id="sessionErr">请选择参加场次</div>
+        </div>
+
+        <!-- 备注 -->
+        <div class="form-group">
+          <label for="remark">备注</label>
+          <textarea id="remark" class="form-control" rows="3" maxlength="200" placeholder="选填，最多200字"></textarea>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn btn-primary btn-full">提交报名</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>
+    // 检查是否已截止
+    if (isClosed()) {
+      window.location.href = "closed.html";
+    }
+
+    // 显示截止时间
+    const deadline = getDeadline();
+    document.getElementById("deadlineText").textContent =
+      "⏰ 报名截止：" + formatDateTime(deadline);
+
+    const form = document.getElementById("regForm");
+    const submitBtn = document.getElementById("submitBtn");
+
+    // 实时校验手机号
+    document.getElementById("phone").addEventListener("input", function () {
+      this.value = this.value.replace(/\D/g, "");
+      if (this.value && !validatePhone(this.value)) {
+        this.classList.add("error");
+        document.getElementById("phoneErr").classList.add("show");
+      } else {
+        this.classList.remove("error");
+        document.getElementById("phoneErr").classList.remove("show");
+      }
+    });
+
+    // 提交
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const identity = document.querySelector('input[name="identity"]:checked');
+      const name = document.getElementById("name").value.trim();
+      const department = document.getElementById("department").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const session = document.getElementById("session").value;
+      const remark = document.getElementById("remark").value.trim();
+
+      let valid = true;
+
+      // 校验姓名
+      if (!name) {
+        document.getElementById("name").classList.add("error");
+        document.getElementById("nameErr").classList.add("show");
+        valid = false;
+      } else {
+        document.getElementById("name").classList.remove("error");
+        document.getElementById("nameErr").classList.remove("show");
+      }
+
+      // 校验手机号
+      if (!phone || !validatePhone(phone)) {
+        document.getElementById("phone").classList.add("error");
+        document.getElementById("phoneErr").classList.add("show");
+        valid = false;
+      } else {
+        document.getElementById("phone").classList.remove("error");
+        document.getElementById("phoneErr").classList.remove("show");
+      }
+
+      // 校验参加场次
+      if (!session) {
+        document.getElementById("session").classList.add("error");
+        document.getElementById("sessionErr").classList.add("show");
+        valid = false;
+      } else {
+        document.getElementById("session").classList.remove("error");
+        document.getElementById("sessionErr").classList.remove("show");
+      }
+
+      if (!valid) {
+        showToast("请完善必填信息", "error");
+        return;
+      }
+
+      // 查重（按手机号）
+      if (checkDuplicate(phone)) {
+        showToast("该手机号已报名，请勿重复提交", "error");
+        return;
+      }
+
+      // 提交
+      submitBtn.disabled = true;
+      submitBtn.textContent = "提交中...";
+
+      const record = {
+        id: generateId(),
+        name,
+        identity: identity ? identity.value : "",
+        department,
+        phone,
+        session,
+        remark,
+        registerTime: new Date().toISOString(),
+      };
+
+      setTimeout(() => {
+        saveRegistration(record);
+        sessionStorage.setItem("latestRegistration", JSON.stringify(record));
+        window.location.href = "success.html";
+      }, 600);
+    });
+  </script>
+</body>
+</html>
